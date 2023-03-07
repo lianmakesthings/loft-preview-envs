@@ -1,0 +1,52 @@
+name: Create Preview Environment
+
+# Run for pull requests to our main branch
+on:
+  pull_request:
+    branches:
+      - main
+
+# make sure the pipeline is only running once
+concurrency:
+  group: preview-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+# define a job that deploys the preview environment
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Install Loft CLI
+        uses: loft-sh/setup-loft@v2
+        with:
+          version: v3.0.0
+          url: https://loft-remote.kubedev.sh
+          # Specify your Loft access key here
+          access-key: ${{ secrets.LOFT_PREVIEW_ACCESS_KEY }}
+          # Optional if your Loft domain certificate is insecure
+          #insecure: true
+
+      - name: Deploy Preview Environment
+        run: |
+          INGRESS_HOST=loft-preview-${{ github.event.pull_request.number }}.my-preview-environments.com
+
+          # Make sure to recreate if there is an already existing environment
+          loft create vcluster loft-preview-${{ github.event.pull_request.number }} --project preview --recreate
+
+          # Deploy the application here with an ingress
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm install argocd argo/argo-cd --version 5.16.3 \
+                                            --create-namespace \
+                                            -n argocd \
+                                            --set server.ingress.enabled=true \
+                                            --set server.ingress.hosts={$INGRESS_HOST}
+
+      - uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ github.event.pull_request.number }}
+          header: release
+          message: |
+            Preview environment deployed at: http://loft-preview-${{ github.event.pull_request.number }}.my-preview-environments.com
