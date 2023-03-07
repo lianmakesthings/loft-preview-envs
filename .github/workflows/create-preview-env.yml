@@ -23,7 +23,7 @@ jobs:
         uses: loft-sh/setup-loft@v2
         with:
           version: v3.0.0
-          url: https://loft-remote.kubedev.sh
+          url: https://loft-remote.chimney42.com
           # Specify your Loft access key here
           access-key: ${{ secrets.LOFT_PREVIEW_ACCESS_KEY }}
           # Optional if your Loft domain certificate is insecure
