@@ -31,7 +31,7 @@ jobs:
 
       - name: Deploy Preview Environment
         run: |
-          INGRESS_HOST=loft-preview-${{ github.event.pull_request.number }}.my-preview-environments.com
+          INGRESS_HOST=loft-preview-${{ github.event.pull_request.number }}.loft-remote.chimney42.com
 
           # Make sure to recreate if there is an already existing environment
           loft create vcluster loft-preview-${{ github.event.pull_request.number }} --project preview --recreate
@@ -49,4 +49,4 @@ jobs:
           number: ${{ github.event.pull_request.number }}
           header: release
           message: |
-            Preview environment deployed at: http://loft-preview-${{ github.event.pull_request.number }}.my-preview-environments.com
+            Preview environment deployed at: http://loft-preview-${{ github.event.pull_request.number }}.loft-remote.chimney42.com
